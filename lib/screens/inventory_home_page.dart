@@ -13,12 +13,75 @@ class InventoryHomePage extends StatefulWidget {
 
 class InventoryHomePageState extends State<InventoryHomePage> {
   final FirestoreService _firestoreService = FirestoreService();
+  final TextEditingController _searchController = TextEditingController();
+  String? _selectedCategory;
+  String? _selectedStockFilter;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Item> _filterItems(List<Item> items) {
+    return items.where((item) {
+      final matchesSearch = _searchController.text.isEmpty ||
+          item.name.toLowerCase().contains(_searchController.text.toLowerCase());
+
+      final matchesCategory = _selectedCategory == null ||
+          _selectedCategory == 'All Categories' ||
+          item.category == _selectedCategory;
+
+      final matchesStock = _selectedStockFilter == null ||
+          _selectedStockFilter == 'All Items' ||
+          (_selectedStockFilter == 'Low Stock' && item.quantity < 5);
+
+      return matchesSearch && matchesCategory && matchesStock;
+    }).toList();
+  }
+
+  List<String> _getCategories(List<Item> items) {
+    final categories = items.map((item) => item.category).toSet().toList();
+    categories.sort();
+    return ['All Categories', ...categories];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'Inventory Home Page'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by name...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+          ),
+        ),
       ),
       body: StreamBuilder<List<Item>>(
         stream: _firestoreService.getItemsStream(),
@@ -34,7 +97,7 @@ class InventoryHomePageState extends State<InventoryHomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.error_outline,
                     size: 64,
                     color: Colors.red,
@@ -70,37 +133,127 @@ class InventoryHomePageState extends State<InventoryHomePage> {
             );
           }
 
-          final items = snapshot.data!;
+          final allItems = snapshot.data!;
+          final filteredItems = _filterItems(allItems);
+          final categories = _getCategories(allItems);
 
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ListTile(
-                title: Text(
-                  item.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Column(
+          return Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                color: Colors.grey[100],
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 4),
-                    Text('Category: ${item.category}'),
-                    Text('Quantity: ${item.quantity}'),
-                    Text('Price: \$${item.price.toStringAsFixed(2)}'),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: [
+                        const Text(
+                          'Category:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        ...categories.map((category) {
+                          return FilterChip(
+                            label: Text(category),
+                            selected: _selectedCategory == category,
+                            onSelected: (selected) {
+                              setState(() {
+                                _selectedCategory = selected ? category : null;
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: [
+                        const Text(
+                          'Stock:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        FilterChip(
+                          label: const Text('All Items'),
+                          selected: _selectedStockFilter == 'All Items' ||
+                              _selectedStockFilter == null,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedStockFilter = selected ? 'All Items' : null;
+                            });
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('Low Stock'),
+                          selected: _selectedStockFilter == 'Low Stock',
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedStockFilter =
+                                  selected ? 'Low Stock' : null;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddEditItemScreen(item: item),
+              ),
+              if (filteredItems.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No items match your filters',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              );
-            },
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredItems.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredItems[index];
+                      return ListTile(
+                        title: Text(
+                          item.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text('Category: ${item.category}'),
+                            Text('Quantity: ${item.quantity}'),
+                            Text('Price: \$${item.price.toStringAsFixed(2)}'),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddEditItemScreen(item: item),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
           );
         },
       ),
