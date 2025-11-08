@@ -1,53 +1,51 @@
-// Import Flutter and Firestore packages
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(InventoryApp());
 }
 
 class InventoryApp extends StatelessWidget {
+  const InventoryApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Inventory Management App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: InventoryHomePage(title: 'Inventory Home Page'),
+      home: const InventoryHomePage(title: 'Inventory Home Page'),
     );
   }
 }
 
 class InventoryHomePage extends StatefulWidget {
-  InventoryHomePage({Key key, this.title}) : super(key: key);
-  final String title;
+  const InventoryHomePage({super.key, this.title});
+  final String? title;
 
   @override
-  _InventoryHomePageState createState() => _InventoryHomePageState();
+  State<InventoryHomePage> createState() => InventoryHomePageState();
 }
 
-class _InventoryHomePageState extends State<InventoryHomePage> {
-  // TODO: 1. Initialize Firestore & Create a Stream for items
-  // TODO: 2. Build a ListView using a StreamBuilder to display items
-  // TODO: 3. Implement Navigation to an "Add Item" screen
-  // TODO: 4. Implement one of the Delete methods (swipe or in-edit)
-
+class InventoryHomePageState extends State<InventoryHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(title: Text(widget.title ?? 'Inventory Home Page')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('Inventory Management System'),
-            // TODO: Replace this Text widget with your StreamBuilder & ListView
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to the Add/Edit Item Form
-        },
+        onPressed: () {},
         tooltip: 'Add Item',
         child: Icon(Icons.add),
       ),
