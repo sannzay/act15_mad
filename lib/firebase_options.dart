@@ -73,5 +73,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'inventory-app-sanjayreddy.firebasestorage.app',
     measurementId: 'G-P30BFBTVXH',
   );
-
 }

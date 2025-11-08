@@ -46,7 +46,7 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/sannzay/act15_mad
 cd act15_mad
 ```
 
