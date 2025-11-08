@@ -54,7 +54,7 @@ class InventoryHomePageState extends State<InventoryHomePage> {
         title: Text(widget.title ?? 'Inventory Home Page'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.dashboard),
+            icon: const Icon(Icons.dashboard, color: Colors.white),
             tooltip: 'Dashboard',
             onPressed: () {
               Navigator.push(
@@ -160,6 +160,38 @@ class InventoryHomePageState extends State<InventoryHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DashboardScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.dashboard, color: Colors.white),
+                            label: const Text(
+                              'View Dashboard',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[700],
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     Wrap(
                       spacing: 8.0,
                       runSpacing: 8.0,

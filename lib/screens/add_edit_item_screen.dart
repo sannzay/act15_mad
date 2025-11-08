@@ -279,8 +279,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                         return 'Please enter quantity';
                       }
                       final quantity = int.tryParse(value.trim());
-                      if (quantity == null || quantity <= 0) {
-                        return 'Please enter a positive number';
+                      if (quantity == null || quantity < 0) {
+                        return 'Please enter a non-negative number';
                       }
                       return null;
                     },
@@ -349,12 +349,14 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
                     ),
                     child: const Text(
                       'Save',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
