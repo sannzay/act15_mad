@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
 import '../models/item.dart';
 import 'add_edit_item_screen.dart';
+import 'dashboard_screen.dart';
 
 class InventoryHomePage extends StatefulWidget {
   const InventoryHomePage({super.key, this.title});
@@ -51,6 +52,20 @@ class InventoryHomePageState extends State<InventoryHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'Inventory Home Page'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.dashboard),
+            tooltip: 'Dashboard',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DashboardScreen(),
+                ),
+              );
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
